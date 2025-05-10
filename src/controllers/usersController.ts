@@ -16,6 +16,19 @@ export class UsersController {
     };
   }
 
+  public getUser(userId: string): ResponseObject {
+    if (!this.isValidUUID(userId)) {
+      throw new RequestError(`Invalid user data`, 400);
+    }
+
+    const index = this.isUserExists(userId);
+
+    return {
+      code: 200,
+      data: this.users[index],
+    };
+  }
+
   public createUser(data: string): ResponseObject {
     const user: User = this.validateData(data, randomUUID());
     this.users.push(user);

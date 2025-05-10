@@ -28,6 +28,9 @@ const server = createServer(
         try {
           switch (request.method) {
             case 'GET':
+              if (userId !== '') {
+                return wrapResult(response, controller.getUser(userId));
+              }
               return wrapResult(response, controller.getUsers());
             case 'POST':
               return wrapResult(response, controller.createUser(body));
