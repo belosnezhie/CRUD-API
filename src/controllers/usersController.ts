@@ -17,7 +17,7 @@ export class UsersController {
   }
 
   public createUser(data: string): ResponseObject {
-    const user: User = this.validateData(data);
+    const user: User = this.validateData(data, randomUUID());
     this.users.push(user);
     return {
       code: 201,
@@ -25,11 +25,40 @@ export class UsersController {
     };
   }
 
-  public validateData(data: string): User {
+  public updateUserData(data: string, userId: string): ResponseObject {
+    if (!this.isValidUUID(userId)) {
+      throw new RequestError(`Invalid user data`, 400);
+    }
+
+    const index = this.isUserExists(userId);
+
+    const user: User = this.validateData(data, userId);
+
+    this.users[index] = user;
+
+    return {
+      code: 200,
+      data: user,
+    };
+  }
+
+  private isUserExists(userId: string): number {
+    const index = this.users.findIndex((el) => {
+      return el.id === userId;
+    });
+
+    if (index === -1) {
+      throw new RequestError(`User with ID ${userId} does not exist`, 404);
+    }
+
+    return index;
+  }
+
+  private validateData(data: string, id: string): User {
     try {
       const user = JSON.parse(data);
 
-      user.id = randomUUID();
+      user.id = id;
 
       if (!this.isUser(user)) {
         throw new RequestError(`Invalid user data`, 400);
@@ -43,24 +72,6 @@ export class UsersController {
       );
     }
   }
-
-  // private isUser(obj: unknown): obj is User {
-  //   return (
-  //     typeof obj === 'object' &&
-  //     obj !== null &&
-  //     'id' in obj &&
-  //     typeof (obj as { id: unknown }).id === 'string' &&
-  //     'username' in obj &&
-  //     typeof (obj as { username: unknown }).username === 'string' &&
-  //     'age' in obj &&
-  //     typeof (obj as { age: unknown }).age === 'number' &&
-  //     'hobbies' in obj &&
-  //     Array.isArray((obj as { hobbies: unknown }).hobbies) &&
-  //     (obj as { hobbies: unknown }).hobbies.every(
-  //       (hobby) => typeof hobby === 'string',
-  //     )
-  //   );
-  // }
 
   private isUser(obj: unknown): obj is User {
     if (typeof obj !== 'object' || obj === null) {
@@ -81,5 +92,11 @@ export class UsersController {
       Array.isArray(o.hobbies) &&
       o.hobbies.every((hobby) => typeof hobby === 'string')
     );
+  }
+
+  private isValidUUID(uuid: string): boolean {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 }

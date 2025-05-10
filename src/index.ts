@@ -14,6 +14,8 @@ const server = createServer(
       return wrapNotFound(response);
     }
 
+    const userId: string = parseURL(request.url);
+
     const bodyArr: Buffer[] = [];
     let body = '';
     request
@@ -29,6 +31,11 @@ const server = createServer(
               return wrapResult(response, controller.getUsers());
             case 'POST':
               return wrapResult(response, controller.createUser(body));
+            case 'PUT':
+              return wrapResult(
+                response,
+                controller.updateUserData(body, userId),
+              );
             default:
               return wrapResult(response, controller.getUsers());
           }
@@ -58,6 +65,17 @@ const wrapError = (response: ServerResponse, err: RequestError) => {
   response.setHeader('Content-Type', 'text/plain');
   response.end(err.message);
   return response;
+};
+
+const parseURL = (url: string | undefined): string => {
+  if (!url) {
+    return '';
+  }
+
+  const segments = url.split('/');
+  const userId = segments.pop() ?? '';
+
+  return userId;
 };
 
 server.listen(port, hostname, () => {
