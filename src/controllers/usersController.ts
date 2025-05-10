@@ -42,6 +42,20 @@ export class UsersController {
     };
   }
 
+  public deleteUser(userId: string): ResponseObject {
+    if (!this.isValidUUID(userId)) {
+      throw new RequestError(`Invalid user data`, 400);
+    }
+
+    const index = this.isUserExists(userId);
+
+    this.users.splice(index, 1);
+
+    return {
+      code: 204,
+    };
+  }
+
   private isUserExists(userId: string): number {
     const index = this.users.findIndex((el) => {
       return el.id === userId;

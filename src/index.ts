@@ -36,6 +36,8 @@ const server = createServer(
                 response,
                 controller.updateUserData(body, userId),
               );
+            case 'DELETE':
+              return wrapResult(response, controller.deleteUser(userId));
             default:
               return wrapResult(response, controller.getUsers());
           }
