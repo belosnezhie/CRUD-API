@@ -4,3 +4,8 @@ export interface User {
   age: number;
   hobbies: string[];
 }
+
+export interface ResponseObject {
+  code: number;
+  data?: User | User[];
+}
