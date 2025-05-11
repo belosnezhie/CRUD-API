@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
-import { RequestError } from '../model/customError';
-import { ResponseObject, User } from '../model/model';
+import { RequestError } from '../model/custom-error';
+import { ResponseObject, User } from '../model';
 
 export class UsersController {
   public users: User[];

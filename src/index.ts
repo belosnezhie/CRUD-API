@@ -1,7 +1,7 @@
-import { RequestError } from './model/customError';
-import { UsersController } from './controllers/usersController';
+import { RequestError } from './model/custom-error';
+import { UsersController } from './controllers/users-controller';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
-import { ResponseObject } from './model/model';
+import { ResponseObject } from './model';
 
 const hostname = 'localhost';
 const port = 3000;
