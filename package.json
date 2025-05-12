@@ -4,9 +4,9 @@
   "description": "CRUD API using in-memory database underneath",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "start:dev": "nodemon src/index.ts",
-    "start:prod": "tsc && node dist/index.js",
+    "start": "ts-node src/worker.ts",
+    "start:dev": "nodemon src/worker.ts",
+    "start:prod": "tsc && node dist/worker.js",
     "start:multi": "ts-node src/cluster.ts",
     "build": "tsc",
     "test": "jest",

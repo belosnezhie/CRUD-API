@@ -9,7 +9,7 @@ config();
 const PORT = process.env.PORT || 4000;
 const controller = new UsersController();
 
-const server = createServer(
+export const server = createServer(
   async (request: IncomingMessage, response: ServerResponse) => {
     try {
       if (!request.url?.startsWith('/api/users')) {

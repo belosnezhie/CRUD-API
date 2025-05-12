@@ -8,15 +8,28 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Launch Worker",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/dist/index.js",
+      "program": "${workspaceFolder}/dist/worker.js",
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ],
       "preLaunchTask": "npm: build"
-    }
+    },
+        {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Cluster",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/dist/cluster.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ],
+      "preLaunchTask": "npm: build"
+    },
   ]
 }
