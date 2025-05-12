@@ -23,32 +23,44 @@ const createCluster = async () => {
       cluster.fork(envCopy);
     }
 
+    let lastWorkerPort = 4000;
+
+    const getNextWorkerPort = (): number => {
+      lastWorkerPort += 1;
+      if (lastWorkerPort - 4000 > workersCount) {
+        lastWorkerPort = 4001;
+      }
+      return lastWorkerPort;
+    };
+
     const masterServer = createServer(
-      (clientReq: IncomingMessage, clientRes: ServerResponse) => {
-        const targetPort = 4001;
+      (clientRequest: IncomingMessage, clientResponse: ServerResponse) => {
+        const targetPort = getNextWorkerPort();
 
         const options: RequestOptions = {
           hostname: 'localhost',
           port: targetPort,
-          path: clientReq.url,
-          method: clientReq.method,
-          headers: clientReq.headers,
+          path: clientRequest.url,
+          method: clientRequest.method,
+          headers: clientRequest.headers,
         };
 
         const proxyRequest = http.request(options, (proxyResponse) => {
-          clientRes.writeHead(
+          proxyResponse.headers['x-redirect-worker-port'] =
+            lastWorkerPort.toString();
+          clientResponse.writeHead(
             proxyResponse.statusCode || 500,
             proxyResponse.headers,
           );
-          proxyResponse.pipe(clientRes, { end: true });
+          proxyResponse.pipe(clientResponse, { end: true });
         });
 
-        clientReq.pipe(proxyRequest, { end: true });
+        clientRequest.pipe(proxyRequest, { end: true });
 
         proxyRequest.on('error', (err) => {
           console.error(`Error proxying to port ${targetPort}:`, err);
-          clientRes.statusCode = 502;
-          clientRes.end('Bad Gateway');
+          clientResponse.statusCode = 502;
+          clientResponse.end('Bad Gateway');
         });
       },
     );
@@ -61,9 +73,6 @@ const createCluster = async () => {
     console.log(
       `Worker started, pid: ${process.pid}, port ${process.env.PORT}`,
     );
-    process.on('message', (message) => {
-      console.log(`Message from master: ${message}`);
-    });
   }
 };
 

@@ -1,13 +1,12 @@
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
 import { config } from 'dotenv';
-import { UsersController } from './controllers/users-controller';
+import { usersController as controller } from './controllers/users-controller';
 import { RequestError } from './model/custom-error';
 import { ResponseObject } from './model';
 
 config();
 
 const PORT = process.env.PORT || 4000;
-const controller = new UsersController();
 
 export const server = createServer(
   async (request: IncomingMessage, response: ServerResponse) => {
@@ -60,6 +59,7 @@ const getRequestBody = (req: IncomingMessage): Promise<string> => {
 const wrapResult = (response: ServerResponse, result: ResponseObject) => {
   response.statusCode = result.code;
   response.setHeader('Content-Type', 'application/json');
+  response.setHeader('x-worker-port', PORT);
   response.end(JSON.stringify(result.data));
   return response;
 };
@@ -67,6 +67,7 @@ const wrapResult = (response: ServerResponse, result: ResponseObject) => {
 const wrapNotFound = (response: ServerResponse) => {
   response.statusCode = 404;
   response.setHeader('Content-Type', 'text/plain');
+  response.setHeader('x-worker-port', PORT);
   response.end('Resource not found.');
   return response;
 };
@@ -74,6 +75,7 @@ const wrapNotFound = (response: ServerResponse) => {
 const wrapError = (response: ServerResponse, err: RequestError) => {
   response.statusCode = Number(err.cause) || 500;
   response.setHeader('Content-Type', 'text/plain');
+  response.setHeader('x-worker-port', PORT);
   response.end(err.message || 'Internal Server Error');
   return response;
 };

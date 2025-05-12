@@ -134,3 +134,5 @@ export class UsersController {
     return uuidRegex.test(uuid);
   }
 }
+
+export const usersController = new UsersController();
