@@ -18,7 +18,7 @@ export class UsersController {
 
   public getUser(userId: string): ResponseObject {
     if (!this.isValidUUID(userId)) {
-      throw new RequestError(`Invalid user data`, 400);
+      throw new RequestError(`Invalid user data: user ID is not UUID`, 400);
     }
 
     const index = this.isUserExists(userId);
@@ -40,7 +40,7 @@ export class UsersController {
 
   public updateUserData(data: string, userId: string): ResponseObject {
     if (!this.isValidUUID(userId)) {
-      throw new RequestError(`Invalid user data`, 400);
+      throw new RequestError(`Invalid user data: user ID is not UUID`, 400);
     }
 
     const index = this.isUserExists(userId);
@@ -57,7 +57,7 @@ export class UsersController {
 
   public deleteUser(userId: string): ResponseObject {
     if (!this.isValidUUID(userId)) {
-      throw new RequestError(`Invalid user data`, 400);
+      throw new RequestError(`Invalid user data: user ID is not UUID`, 400);
     }
 
     const index = this.isUserExists(userId);
@@ -102,6 +102,13 @@ export class UsersController {
 
   private isUser(obj: unknown): obj is User {
     if (typeof obj !== 'object' || obj === null) {
+      return false;
+    }
+
+    const allowedKeys = ['id', 'username', 'age', 'hobbies'];
+    const keys = Object.keys(obj);
+
+    if (keys.some((key) => !allowedKeys.includes(key))) {
       return false;
     }
 

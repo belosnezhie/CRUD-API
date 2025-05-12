@@ -7,7 +7,8 @@
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "test": "jest",
-    "watch": "nodemon src/index.ts"
+    "watch": "nodemon src/index.ts",
+    "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "repository": {
     "type": "git",
@@ -37,5 +38,8 @@
     "tsc-watch": "^6.2.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
   }
 }

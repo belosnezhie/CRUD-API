@@ -1,55 +1,61 @@
-import { RequestError } from './model/custom-error';
-import { UsersController } from './controllers/users-controller';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
+import { config } from 'dotenv';
+import { UsersController } from './controllers/users-controller';
+import { RequestError } from './model/custom-error';
 import { ResponseObject } from './model';
 
-const hostname = 'localhost';
-const port = 3000;
+config();
 
+const PORT = process.env.PORT || 4000;
 const controller = new UsersController();
 
 const server = createServer(
-  (request: IncomingMessage, response: ServerResponse) => {
-    if (!request.url?.startsWith('/api/users')) {
-      return wrapNotFound(response);
-    }
+  async (request: IncomingMessage, response: ServerResponse) => {
+    try {
+      if (!request.url?.startsWith('/api/users')) {
+        return wrapNotFound(response);
+      }
 
-    const userId: string = parseURL(request.url);
+      const userId: string = parseURL(request.url);
+      const body: string = await getRequestBody(request);
 
-    const bodyArr: Buffer[] = [];
-    let body = '';
-    request
-      .on('data', (chunk) => {
-        bodyArr.push(chunk);
-      })
-      .on('end', () => {
-        body = Buffer.concat(bodyArr).toString();
-
-        try {
-          switch (request.method) {
-            case 'GET':
-              if (userId !== '') {
-                return wrapResult(response, controller.getUser(userId));
-              }
-              return wrapResult(response, controller.getUsers());
-            case 'POST':
-              return wrapResult(response, controller.createUser(body));
-            case 'PUT':
-              return wrapResult(
-                response,
-                controller.updateUserData(body, userId),
-              );
-            case 'DELETE':
-              return wrapResult(response, controller.deleteUser(userId));
-            default:
-              return wrapResult(response, controller.getUsers());
+      switch (request.method) {
+        case 'GET':
+          if (userId !== '') {
+            return wrapResult(response, await controller.getUser(userId));
           }
-        } catch (err) {
-          return wrapError(response, err as RequestError);
-        }
-      });
+          return wrapResult(response, await controller.getUsers());
+
+        case 'POST':
+          return wrapResult(response, await controller.createUser(body));
+
+        case 'PUT':
+          return wrapResult(
+            response,
+            await controller.updateUserData(body, userId),
+          );
+
+        case 'DELETE':
+          return wrapResult(response, await controller.deleteUser(userId));
+
+        default:
+          return wrapNotFound(response);
+      }
+    } catch (err) {
+      return wrapError(response, err as RequestError);
+    }
   },
 );
+
+const getRequestBody = (req: IncomingMessage): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString()));
+    req.on('error', (err) => reject(err));
+  });
+};
 
 const wrapResult = (response: ServerResponse, result: ResponseObject) => {
   response.statusCode = result.code;
@@ -66,23 +72,18 @@ const wrapNotFound = (response: ServerResponse) => {
 };
 
 const wrapError = (response: ServerResponse, err: RequestError) => {
-  response.statusCode = Number(err.cause);
+  response.statusCode = Number(err.cause) || 500;
   response.setHeader('Content-Type', 'text/plain');
-  response.end(err.message);
+  response.end(err.message || 'Internal Server Error');
   return response;
 };
 
-const parseURL = (url: string | undefined): string => {
-  if (!url) {
-    return '';
-  }
-
+const parseURL = (url: string): string => {
   const segments = url.split('/');
-  const userId = segments.pop() ?? '';
-
-  return userId;
+  const enpoint = segments[segments.length - 1] || '';
+  return enpoint === 'users' ? '' : enpoint;
 };
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
